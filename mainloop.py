@@ -29,13 +29,10 @@ while not done:
         if event.type == pygame.QUIT:
             done = True
         if event.type == pygame.MOUSEBUTTONDOWN:
-##            global ite
             pos = list(event.pos)
-            if ite % 2 == 0:
-##                image = pygame.image.load(r"xMark.gif")
-##                image = pygame.transform.scale(image, (square_width, square_width))
-##                screen.blit(image, pos)
-    
+            for i in range(2):
+                pos[i] = ((pos[i] - square_offset) // square_width) * square_width + square_offset
+            if ite % 2 == 0:    
                 pygame.draw.line(screen, color_palette[1], pos, (pos[0] + square_width, pos[1] + square_width), 5)
                 pygame.draw.line(screen, color_palette[1], (pos[0] + square_width, pos[1]), (pos[0], pos[1] + square_width), 5)
             else:
