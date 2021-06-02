@@ -21,6 +21,7 @@ class XPlayer:
             return 1
         return 0    
     def is_winning_vertically(self):
+        result = []
         for j in range(self.col):
             for i in range(self.row - 4):
                 if self.board[i][j] == self.mark:
@@ -28,8 +29,8 @@ class XPlayer:
                         if self.board[i + 2][j] == self.mark:
                             if self.board[i + 3][j] == self.mark:
                                 if self.board[i + 4][j] == self.mark:
-                                    return 1
-        return 0
+                                    return [[i, j], [i+1, j], [i+2, j], [i+3, j], [i+4, j]]
+        return []
     def is_winning_horizontally(self):
         for i in range(self.row):
             for j in range(self.col - 4):
@@ -38,8 +39,8 @@ class XPlayer:
                         if self.board[i][j + 2] == self.mark:
                             if self.board[i][j + 3] == self.mark:
                                 if self.board[i][j + 4] == self.mark:
-                                    return 1
-        return 0
+                                    return [[i, j], [i, j+1], [i, j+2], [i, j+3], [i, j+4]]
+        return []
     def is_winning_diagonally(self):
         for i in range(self.row - 4):
             for j in range(self.col - 4):
@@ -48,10 +49,16 @@ class XPlayer:
                         if self.board[i + 2][j + 2] == self.mark:
                             if self.board[i + 3][j + 3] == self.mark:
                                 if self.board[i + 4][j + 4] == self.mark:
-                                    return 1
-        return 0
+                                    return [[i, j], [i+1, j+1], [i+2, j+2], [i+3, j+3], [i+4, j+4]]
+        return []
     def is_winning(self):
-        return self.is_winning_vertically() or self.is_winning_horizontally() or self.is_winning_diagonally()
+        if result := self.is_winning_vertically():
+            return result
+        if result := self.is_winning_horizontally():
+            return result
+        if result := self.is_winning_diagonally():
+            return result
+        return []
         
 
 class OPlayer(XPlayer):
