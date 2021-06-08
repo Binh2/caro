@@ -1,0 +1,3 @@
+QUIT = -1
+SCENE_GAME = 0
+SCENE_MENU = 1

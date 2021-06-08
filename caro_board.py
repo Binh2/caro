@@ -1,18 +1,12 @@
 import pygame
+import constants
+import colors
 
-color_palettes = {
-    "mysterious": ["#581b98", "#9c1de7", "#f3558e", "#faee1c", "#8cff75"],
-    "freezing": ['#7d8aff', '#6db3de', '#84f5e4', '#6dde8e', '#cdfab6']
-}
-color_palette = color_palettes["mysterious"]
+
+color_palette = colors.color_palettes["mysterious"]
 for i in  range(len(color_palette)):
     color_palette[i] = pygame.Color(color_palette[i])
 
-res = width, height = 720, 720
-pygame.init()
-pygame.display.init()
-screen = pygame.display.set_mode(res)
-screen.fill(color_palette[1])
 
 class Board:
     __instance = None
@@ -45,7 +39,7 @@ class Board:
         return '\n'.join([' '.join([str(cell) for cell in row]) for row in self.board])
 
     
-    def draw(self):
+    def draw(self, screen):
         for i in range(self.row):
             for j in range(self.col):
                 rect = pygame.Rect(i * self.square_width + self.x_offset, j * self.square_width + self.y_offset, self.square_width, self.square_width)
@@ -57,7 +51,7 @@ class MoveLog():
         self.moveLog = pygame.sprite.Group()
 
         
-    def draw(self):
+    def draw(self, screen):
         self.moveLog.draw(screen)
 
         
@@ -93,10 +87,11 @@ class Mark(pygame.sprite.Sprite):
 
 
 class Caro:
-    def __init__(self, board_row = 10, board_col = 10):
+    def __init__(self, screen, board_row = 10, board_col = 10):
         self.board = Board(board_row, board_col)
         self.moveLog = MoveLog()
         self.consecutive_num = 5
+        self.screen = screen
         
     def add_move(self, x, y):
         board_y = (x - self.board.x_offset) // self.board.square_width
@@ -115,15 +110,15 @@ class Caro:
 
         
     def draw_move(self):
-        self.moveLog.draw()
+        self.moveLog.draw(self.screen)
 
         
     def draw_board(self):
-        self.board.draw()
+        self.board.draw(self.screen)
 
         
     def draw(self):
-        screen.fill(color_palette[1])
+        self.screen.fill(color_palette[1])
         self.draw_move()
         self.draw_board()
         mark = None
@@ -133,6 +128,24 @@ class Caro:
             mark = 'x'
         if winning_board_points := self.find_consecutive_marks(mark):
             self.draw_winning_line(winning_board_points)
+        pygame.display.flip()
+
+
+    def main_loop(self):
+        fps_limit = 10
+        clock = pygame.time.Clock()
+        while True:
+            clock.tick(fps_limit)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return constants.QUIT
+                if event.type == pygame.KEYDOWN:
+                    return constants.SCENE_MENU
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = list(event.pos)
+                    self.add_move(pos[0], pos[1])
+                    print(self.board)
+            self.draw()
 
         
     def find_vertical_consecutive_marks(self, mark):
@@ -205,7 +218,7 @@ class Caro:
         return []
     def draw_winning_line(self, winning_board_points):
         if len(winning_board_points) == self.consecutive_num:
-            pygame.draw.line(screen, color_palette[4],
+            pygame.draw.line(self.screen, color_palette[4],
                              (winning_board_points[0][1] * self.board.square_width + self.board.x_offset + self.board.square_width // 2,
                               winning_board_points[0][0] * self.board.square_width + self.board.y_offset + self.board.square_width // 2),
                              (winning_board_points[self.consecutive_num - 1][1] * self.board.square_width + self.board.x_offset + self.board.square_width // 2,

@@ -1,24 +1,30 @@
 import pygame, sys
-import caro_board
+import caro_board, my_menu
+import constants
+scene = constants.SCENE_MENU
 
+res = width, height = 720, 720
+pygame.init()
+pygame.display.init()
+screen = pygame.display.set_mode(res)
 fps_limit = 10
 clock = pygame.time.Clock()
 
 done = False
-caro = caro_board.Caro()
+caro = caro_board.Caro(screen)
 caro.draw_board()
+
+menu = my_menu.Menu(screen)
 
 while not done:
     clock.tick(fps_limit)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = list(event.pos)
-            caro.add_move(pos[0], pos[1])
-            print(caro.board)
-            caro.draw()
-
+    
+    if scene == constants.SCENE_MENU:
+        scene = menu.main_loop()
+    elif scene == constants.SCENE_GAME:
+        scene = caro.main_loop()
+    elif scene == constants.QUIT:
+        done = True
     
     pygame.display.flip()
 
