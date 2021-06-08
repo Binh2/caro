@@ -177,6 +177,21 @@ class Caro:
                     return result
         return result
 
+
+    def find_secondary_diagonal_consecutive_marks(self, mark):
+        for i in range(self.board.row - 4):
+            for j in range(self.consecutive_num - 1, self.board.col - 4):
+                for k in range(self.consecutive_num):
+                    if (self.board[i+k][j-k] == mark):
+                        result.append([i+k, j-k])
+                    else:
+                        result = []
+                        break
+                if len(result) == self.consecutive_num:
+                    return result
+        return result
+
+
     
     def find_consecutive_marks(self, mark):
         if result := self.find_vertical_consecutive_marks(mark):
@@ -184,6 +199,8 @@ class Caro:
         if result := self.find_horizontal_consecutive_marks(mark):
             return result
         if result := self.find_diagonal_consecutive_marks(mark):
+            return result
+        if result := self.find_secondary_diagonal_consecutive_marks(mark):
             return result
         return []
     def draw_winning_line(self, winning_board_points):
