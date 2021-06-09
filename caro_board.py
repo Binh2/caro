@@ -164,6 +164,7 @@ class Caro:
 
     
     def find_horizontal_consecutive_marks(self, mark):
+        result = []
         for i in range(self.board.row):
             for j in range(self.board.col - 4):
                 for k in range(self.consecutive_num):
@@ -178,6 +179,7 @@ class Caro:
 
     
     def find_diagonal_consecutive_marks(self, mark):
+        result = []
         for i in range(self.board.row - 4):
             for j in range(self.board.col - 4):
                 for k in range(self.consecutive_num):
@@ -192,6 +194,7 @@ class Caro:
 
 
     def find_secondary_diagonal_consecutive_marks(self, mark):
+        result = []
         for i in range(self.board.row - 4):
             for j in range(self.consecutive_num - 1, self.board.col - 4):
                 for k in range(self.consecutive_num):

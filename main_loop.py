@@ -1,5 +1,5 @@
 import pygame, sys
-import caro_board, my_menu
+import caro_board, main_menu
 import constants
 scene = constants.SCENE_MENU
 
@@ -14,7 +14,7 @@ done = False
 caro = caro_board.Caro(screen)
 caro.draw_board()
 
-menu = my_menu.Menu(screen)
+menu = main_menu.Menu(screen)
 
 while not done:
     clock.tick(fps_limit)
