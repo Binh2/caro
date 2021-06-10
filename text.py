@@ -2,7 +2,7 @@ import pygame
 import colors
 
 
-class TextWindow:
+class Text:
     def __init__(self, screen, text, size, color_palette = colors.color_palettes['freezing']):
         self.screen = screen
         self.font = pygame.font.SysFont(None, size)

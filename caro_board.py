@@ -1,7 +1,7 @@
 import pygame
 import constants
 import colors
-
+import text
 
 color_palette = colors.color_palettes["mysterious"]
 for i in  range(len(color_palette)):
@@ -10,7 +10,7 @@ for i in  range(len(color_palette)):
 
 class Board:
     __instance = None
-    def __init__(self, row = 10, col = 10):
+    def __init__(self, screen, row = 10, col = 10):
         if Board.__instance != None:
             raise Exception("Board is a singleton class")
         Board.__instance = self
@@ -20,13 +20,21 @@ class Board:
         self.row = row
         self.col = col
         self.board = [['.' for j in range(self.col)] for i in range(self.row)]
+        self.screen = screen
 
-    def add_mark(self, x, y, mark):
+
+    def add(self, x, y, mark):
         self.board[x][y] = mark
+
+
+    def remove(self, x, y):
+        self.board[x][y] = '.'
 
 
     def __getitem__(self, i):
         return self.board[i]
+
+    
     def get_inst():
         return Board.__instance
 
@@ -39,32 +47,41 @@ class Board:
         return '\n'.join([' '.join([str(cell) for cell in row]) for row in self.board])
 
     
-    def draw(self, screen):
+    def draw(self):
         for i in range(self.row):
             for j in range(self.col):
                 rect = pygame.Rect(i * self.square_width + self.x_offset, j * self.square_width + self.y_offset, self.square_width, self.square_width)
-                pygame.draw.rect(screen, color_palette[2], rect, 1, 2)
+                pygame.draw.rect(self.screen, color_palette[2], rect, 1, 2)
     
 
 class MoveLog():
     def __init__(self):
-        self.moveLog = pygame.sprite.Group()
+        self.moveLog = []
 
         
-    def draw(self, screen):
-        self.moveLog.draw(screen)
+    def draw(self):
+        for markObject in self.moveLog:
+            markObject.draw()
 
         
     def add(self, markObject):
-        self.moveLog.add(markObject)
+        self.moveLog.append(markObject)
+
+
+    def remove(self):
+        self.moveLog.pop()
+        
+
+    def __getitem__(self, i):
+        return self.moveLog[i]
+
 
     def __len__(self):
         return len(self.moveLog)
         
 
-class Mark(pygame.sprite.Sprite):
-    def __init__(self, x, y, mark):
-        super().__init__()
+class Mark():
+    def __init__(self, screen, x, y, mark):
         self.mark = mark
         if (self.mark == 'x'):
             corner_offset = Board.get_inst().square_width // 7
@@ -80,18 +97,25 @@ class Mark(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (Board.get_inst().square_width, Board.get_inst().square_width))
         self.image.set_colorkey((0,0,0))
         self.rect = self.image.get_rect()
-        self.x = (x - Board.get_inst().x_offset) // Board.get_inst().square_width
-        self.y = (y - Board.get_inst().y_offset) // Board.get_inst().square_width
-        self.rect.x = self.x * Board.get_inst().square_width + Board.get_inst().x_offset
-        self.rect.y = self.y * Board.get_inst().square_width + Board.get_inst().y_offset    
+        self.y = (x - Board.get_inst().x_offset) // Board.get_inst().square_width
+        self.x = (y - Board.get_inst().y_offset) // Board.get_inst().square_width
+        self.rect.x = self.y * Board.get_inst().square_width + Board.get_inst().x_offset
+        self.rect.y = self.x * Board.get_inst().square_width + Board.get_inst().y_offset
+        self.screen = screen
+        
+        
+    def draw(self):
+        self.screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
 class Caro:
     def __init__(self, screen, board_row = 10, board_col = 10):
-        self.board = Board(board_row, board_col)
+        self.screen = screen
+        self.board = Board(self.screen, board_row, board_col)
         self.moveLog = MoveLog()
         self.consecutive_num = 5
-        self.screen = screen
+        self.undoButton = text.Text(self.screen, "Undo", 50)
+
         
     def add_move(self, x, y):
         board_y = (x - self.board.x_offset) // self.board.square_width
@@ -105,22 +129,32 @@ class Caro:
                     else:
                         mark = 'o'
                     self.board[board_x][board_y] = mark
-                    markObject = Mark(x, y, mark)
+                    markObject = Mark(self.screen, x, y, mark)
                     self.moveLog.add(markObject)
+
+
+    def remove_move(self):
+        self.board.remove(self.moveLog[-1].x, self.moveLog[-1].y)
+        self.moveLog.remove()
 
         
     def draw_move(self):
-        self.moveLog.draw(self.screen)
+        self.moveLog.draw()
 
         
     def draw_board(self):
-        self.board.draw(self.screen)
+        self.board.draw()
+
+
+    def draw_button(self):
+        self.undoButton.draw(100, 50)
 
         
     def draw(self):
         self.screen.fill(color_palette[1])
         self.draw_move()
         self.draw_board()
+        self.draw_button()
         mark = None
         if len(self.moveLog) % 2 == 0:
             mark = 'o'
@@ -145,6 +179,9 @@ class Caro:
                     pos = list(event.pos)
                     self.add_move(pos[0], pos[1])
                     print(self.board)
+                    if self.undoButton.is_clicked(event.pos):
+                        self.remove_move()
+                    
             self.draw()
 
         
@@ -196,7 +233,7 @@ class Caro:
     def find_secondary_diagonal_consecutive_marks(self, mark):
         result = []
         for i in range(self.board.row - 4):
-            for j in range(self.consecutive_num - 1, self.board.col - 4):
+            for j in range(self.consecutive_num - 1, self.board.col):
                 for k in range(self.consecutive_num):
                     if (self.board[i+k][j-k] == mark):
                         result.append([i+k, j-k])
@@ -219,6 +256,8 @@ class Caro:
         if result := self.find_secondary_diagonal_consecutive_marks(mark):
             return result
         return []
+
+
     def draw_winning_line(self, winning_board_points):
         if len(winning_board_points) == self.consecutive_num:
             pygame.draw.line(self.screen, color_palette[4],
