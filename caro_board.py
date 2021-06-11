@@ -57,6 +57,7 @@ class Board:
 class MoveLog():
     def __init__(self):
         self.moveLog = []
+        self.moveLogTrash = []
 
         
     def draw(self):
@@ -65,11 +66,21 @@ class MoveLog():
 
         
     def add(self, markObject):
+        if self.moveLogTrash != []:
+            self.moveLogTrash = []
         self.moveLog.append(markObject)
 
 
-    def remove(self):
-        self.moveLog.pop()
+    def move_backward(self):
+        if self.moveLog == []:
+            return
+        self.moveLogTrash.append(self.moveLog.pop())
+
+
+    def move_forward(self):
+        if self.moveLogTrash == []:
+            return
+        self.moveLog.append(self.moveLogTrash.pop())
         
 
     def __getitem__(self, i):
@@ -113,8 +124,10 @@ class Caro:
         self.screen = screen
         self.board = Board(self.screen, board_row, board_col)
         self.moveLog = MoveLog()
+        self.moveLogTrash = self.moveLog.moveLogTrash
         self.consecutive_num = 5
-        self.undoButton = text.Text(self.screen, "Undo", 50)
+        self.moveBackwardButton = text.Text(self.screen, "Move back", 50)
+        self.moveForwardButton = text.Text(self.screen, "Move forward", 50)
 
         
     def add_move(self, x, y):
@@ -133,9 +146,18 @@ class Caro:
                     self.moveLog.add(markObject)
 
 
-    def remove_move(self):
+    def move_backward(self):
+        if len(self.moveLog) == 0:
+            return
         self.board.remove(self.moveLog[-1].x, self.moveLog[-1].y)
-        self.moveLog.remove()
+        self.moveLog.move_backward()
+
+
+    def move_forward(self):
+        if self.moveLogTrash == []:
+            return
+        self.board.add(self.moveLogTrash[-1].x, self.moveLogTrash[-1].y, self.moveLogTrash[-1].mark)
+        self.moveLog.move_forward()        
 
         
     def draw_move(self):
@@ -146,15 +168,16 @@ class Caro:
         self.board.draw()
 
 
-    def draw_button(self):
-        self.undoButton.draw(100, 50)
+    def draw_buttons(self):
+        self.moveBackwardButton.draw(100, 50)
+        self.moveForwardButton.draw(300, 50)
 
         
     def draw(self):
         self.screen.fill(color_palette[1])
         self.draw_move()
         self.draw_board()
-        self.draw_button()
+        self.draw_buttons()
         mark = None
         if len(self.moveLog) % 2 == 0:
             mark = 'o'
@@ -174,13 +197,21 @@ class Caro:
                 if event.type == pygame.QUIT:
                     return constants.QUIT
                 if event.type == pygame.KEYDOWN:
-                    return constants.SCENE_MENU
+                    if event.key == pygame.K_ESCAPE:
+                        return constants.SCENE_MENU
+                    elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                        self.move_backward()
+                    elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                        self.move_forward()
+                        
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = list(event.pos)
                     self.add_move(pos[0], pos[1])
-                    print(self.board)
-                    if self.undoButton.is_clicked(event.pos):
-                        self.remove_move()
+                    if self.moveBackwardButton.is_clicked(event.pos):
+                        self.move_backward()
+                    if self.moveForwardButton.is_clicked(event.pos):
+                        self.move_forward()
+                    print(self.board, '\n')
                     
             self.draw()
 

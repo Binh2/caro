@@ -28,6 +28,8 @@ class Menu:
                 if event.type == pygame.QUIT:
                     return constants.QUIT
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        return constants.QUIT
                     return constants.SCENE_GAME
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     for window in self.windows:
