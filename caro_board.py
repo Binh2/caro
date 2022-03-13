@@ -34,7 +34,7 @@ class Board:
     def __getitem__(self, i):
         return self.board[i]
 
-    
+
     def get_inst():
         return Board.__instance
 
@@ -42,29 +42,29 @@ class Board:
     def __str__(self):
         return '\n'.join([' '.join([str(cell) for cell in row]) for row in self.board])
 
-    
+
     def __repr__(self):
         return '\n'.join([' '.join([str(cell) for cell in row]) for row in self.board])
 
-    
+
     def draw(self):
         for i in range(self.row):
             for j in range(self.col):
                 rect = pygame.Rect(i * self.square_width + self.x_offset, j * self.square_width + self.y_offset, self.square_width, self.square_width)
                 pygame.draw.rect(self.screen, color_palette[2], rect, 1, 2)
-    
+
 
 class MoveLog():
     def __init__(self):
         self.moveLog = []
         self.moveLogTrash = []
 
-        
+
     def draw(self):
         for markObject in self.moveLog:
             markObject.draw()
 
-        
+
     def add(self, markObject):
         if self.moveLogTrash != []:
             self.moveLogTrash = []
@@ -81,7 +81,7 @@ class MoveLog():
         if self.moveLogTrash == []:
             return
         self.moveLog.append(self.moveLogTrash.pop())
-        
+
 
     def __getitem__(self, i):
         return self.moveLog[i]
@@ -89,7 +89,7 @@ class MoveLog():
 
     def __len__(self):
         return len(self.moveLog)
-        
+
 
 class Mark():
     def __init__(self, screen, x, y, mark):
@@ -113,8 +113,8 @@ class Mark():
         self.rect.x = self.y * Board.get_inst().square_width + Board.get_inst().x_offset
         self.rect.y = self.x * Board.get_inst().square_width + Board.get_inst().y_offset
         self.screen = screen
-        
-        
+
+
     def draw(self):
         self.screen.blit(self.image, (self.rect.x, self.rect.y))
 
@@ -129,7 +129,7 @@ class Caro:
         self.moveBackwardButton = text.Text(self.screen, "Move back", 50)
         self.moveForwardButton = text.Text(self.screen, "Move forward", 50)
 
-        
+
     def add_move(self, x, y):
         board_y = (x - self.board.x_offset) // self.board.square_width
         if 0 <= board_y < self.board.row:
@@ -157,13 +157,13 @@ class Caro:
         if self.moveLogTrash == []:
             return
         self.board.add(self.moveLogTrash[-1].x, self.moveLogTrash[-1].y, self.moveLogTrash[-1].mark)
-        self.moveLog.move_forward()        
+        self.moveLog.move_forward()
 
-        
+
     def draw_move(self):
         self.moveLog.draw()
 
-        
+
     def draw_board(self):
         self.board.draw()
 
@@ -172,7 +172,7 @@ class Caro:
         self.moveBackwardButton.draw(100, 50)
         self.moveForwardButton.draw(300, 50)
 
-        
+
     def draw(self):
         self.screen.fill(color_palette[1])
         self.draw_move()
@@ -188,8 +188,7 @@ class Caro:
         pygame.display.flip()
 
 
-    def main_loop(self):
-        fps_limit = 10
+    def loop(self, fps_limit = 10):
         clock = pygame.time.Clock()
         while True:
             clock.tick(fps_limit)
@@ -203,7 +202,7 @@ class Caro:
                         self.move_backward()
                     elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                         self.move_forward()
-                        
+
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = list(event.pos)
                     self.add_move(pos[0], pos[1])
@@ -212,10 +211,10 @@ class Caro:
                     if self.moveForwardButton.is_clicked(event.pos):
                         self.move_forward()
                     print(self.board, '\n')
-                    
+
             self.draw()
 
-        
+
     def find_vertical_consecutive_marks(self, mark):
         result = []
         for j in range(self.board.col):
@@ -230,7 +229,7 @@ class Caro:
                     return result
         return result
 
-    
+
     def find_horizontal_consecutive_marks(self, mark):
         result = []
         for i in range(self.board.row):
@@ -245,7 +244,7 @@ class Caro:
                     return result
         return result
 
-    
+
     def find_diagonal_consecutive_marks(self, mark):
         result = []
         for i in range(self.board.row - 4):
@@ -276,7 +275,7 @@ class Caro:
         return result
 
 
-    
+
     def find_consecutive_marks(self, mark):
         if result := self.find_vertical_consecutive_marks(mark):
             return result
@@ -296,4 +295,3 @@ class Caro:
                               winning_board_points[0][0] * self.board.square_width + self.board.y_offset + self.board.square_width // 2),
                              (winning_board_points[self.consecutive_num - 1][1] * self.board.square_width + self.board.x_offset + self.board.square_width // 2,
                               winning_board_points[self.consecutive_num - 1][0] * self.board.square_width + self.board.y_offset + self.board.square_width // 2), 5)
-            

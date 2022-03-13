@@ -19,8 +19,7 @@ class Menu:
         pygame.display.flip()
 
 
-    def main_loop(self):
-        fps_limit = 10
+    def loop(self, fps_limit = 10):
         clock = pygame.time.Clock()
         while True:
             clock.tick(fps_limit)
@@ -36,4 +35,3 @@ class Menu:
                         if window.is_clicked(event.pos):
                             return constants.SCENE_GAME
             self.draw()
-        

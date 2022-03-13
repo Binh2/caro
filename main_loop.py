@@ -18,16 +18,15 @@ menu = main_menu.Menu(screen)
 
 while not done:
     clock.tick(fps_limit)
-    
+
     if scene == constants.SCENE_MENU:
-        scene = menu.main_loop()
+        scene = menu.loop(fps_limit)
     elif scene == constants.SCENE_GAME:
-        scene = caro.main_loop()
+        scene = caro.loop(fps_limit)
     elif scene == constants.QUIT:
         done = True
-    
+
     pygame.display.flip()
 
 pygame.quit()
 sys.exit()
-    
