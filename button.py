@@ -1,50 +1,57 @@
 import pygame
+import json
+import constants
 
 class Button:
-    def __init__(self, x, y, width, height, border_radius, background_color, text, text_color, text_size):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.border_radius = border_radius
-        self.background_color = background_color
-        self.text = text
-        self.text_color = text_color
-        self.text_size = text_size
+    def __init__(self, fileName):
+        with open(fileName, "r") as file:
+            self.obj = json.load(file)
+        self.x = self.obj['x']
+        self.y = self.obj['y']
+        self.width = self.obj['width']
+        self.height = self.obj['height']
+        self.border_radius = self.obj['border_radius']
+        self.text = self.obj['text']
+        self.text_size = self.obj['text_size']
+        self.color_palette = self.obj['color'] # color_palette had to have background and text key
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def draw(self, screen):
         font = pygame.font.SysFont(None, self.text_size)
-        text = font.render(self.text, True, self.text_color)
+        text = font.render(self.text, True, self.color_palette["text"])
         text_rect = text.get_rect(center = (self.x + self.width / 2, self.y + self.height / 2))
 
-        pygame.draw.rect(screen, self.background_color, self.rect, 0, self.border_radius)
+        pygame.draw.rect(screen, self.color_palette["background"], self.rect, 0, self.border_radius)
 
         screen.blit(text, text_rect)
 
+    def after_clicked(self):
+        print("hello")
 
     def event_handler(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                print("hello")
+                return self.after_clicked()
 
-    def loop(self):
-        pass
-
+    def loop(self, screen, fps_limit = 10):
+        done = False
+        clock = pygame.time.Clock()
+        result = constants.QUIT
+        while not done:
+            clock.tick(fps_limit)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True
+                result = self.event_handler(event)
+            screen.fill((255,255,255))
+            self.draw(screen)
+            pygame.display.flip()
+        return result
 
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode([720, 720])
 
-    button = Button(50, 100, 100, 50, 5, (0,255,0), "hello", (255,0,0), 24)
+    button = Button('button.txt')
 
-    done = False
-    while not done:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
-            button.event_handler(event)
-
-        screen.fill((255,255,255))
-        button.draw(screen)
-        pygame.display.flip()
+    button.loop(screen)
