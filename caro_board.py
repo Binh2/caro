@@ -10,7 +10,7 @@ for i in  range(len(color_palette)):
 
 class Board:
     __instance = None
-    def __init__(self, screen, row = 10, col = 10):
+    def __init__(self, row = 10, col = 10):
         if Board.__instance != None:
             raise Exception("Board is a singleton class")
         Board.__instance = self
@@ -20,7 +20,6 @@ class Board:
         self.row = row
         self.col = col
         self.board = [['.' for j in range(self.col)] for i in range(self.row)]
-        self.screen = screen
 
 
     def add(self, x, y, mark):
@@ -47,11 +46,11 @@ class Board:
         return '\n'.join([' '.join([str(cell) for cell in row]) for row in self.board])
 
 
-    def draw(self):
+    def draw(self, screen):
         for i in range(self.row):
             for j in range(self.col):
                 rect = pygame.Rect(i * self.square_width + self.x_offset, j * self.square_width + self.y_offset, self.square_width, self.square_width)
-                pygame.draw.rect(self.screen, color_palette[2], rect, 1, 2)
+                pygame.draw.rect(screen, color_palette[2], rect, 1, 2)
 
 
 class MoveLog():
@@ -60,9 +59,9 @@ class MoveLog():
         self.moveLogTrash = []
 
 
-    def draw(self):
+    def draw(self, screen):
         for markObject in self.moveLog:
-            markObject.draw()
+            markObject.draw(screen)
 
 
     def add(self, markObject):
@@ -92,7 +91,7 @@ class MoveLog():
 
 
 class Mark():
-    def __init__(self, screen, x, y, mark):
+    def __init__(self, x, y, mark):
         self.mark = mark
         if (self.mark == 'x'):
             corner_offset = Board.get_inst().square_width // 7
@@ -112,22 +111,20 @@ class Mark():
         self.x = (y - Board.get_inst().y_offset) // Board.get_inst().square_width
         self.rect.x = self.y * Board.get_inst().square_width + Board.get_inst().x_offset
         self.rect.y = self.x * Board.get_inst().square_width + Board.get_inst().y_offset
-        self.screen = screen
 
 
-    def draw(self):
-        self.screen.blit(self.image, (self.rect.x, self.rect.y))
+    def draw(self, screen):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
 class Caro:
-    def __init__(self, screen, board_row = 10, board_col = 10):
-        self.screen = screen
-        self.board = Board(self.screen, board_row, board_col)
+    def __init__(self, board_row = 10, board_col = 10):
+        self.board = Board(board_row, board_col)
         self.moveLog = MoveLog()
         self.moveLogTrash = self.moveLog.moveLogTrash
         self.consecutive_num = 5
-        self.moveBackwardButton = text.Text(self.screen, "Move back", 50)
-        self.moveForwardButton = text.Text(self.screen, "Move forward", 50)
+        self.moveBackwardButton = text.Text("Move back", 50)
+        self.moveForwardButton = text.Text("Move forward", 50)
 
 
     def add_move(self, x, y):
@@ -142,7 +139,7 @@ class Caro:
                     else:
                         mark = 'o'
                     self.board[board_x][board_y] = mark
-                    markObject = Mark(self.screen, x, y, mark)
+                    markObject = Mark(x, y, mark)
                     self.moveLog.add(markObject)
 
 
@@ -160,35 +157,35 @@ class Caro:
         self.moveLog.move_forward()
 
 
-    def draw_move(self):
-        self.moveLog.draw()
+    def draw_move(self, screen):
+        self.moveLog.draw(screen)
 
 
-    def draw_board(self):
-        self.board.draw()
+    def draw_board(self, screen):
+        self.board.draw(screen)
 
 
-    def draw_buttons(self):
-        self.moveBackwardButton.draw(100, 50)
-        self.moveForwardButton.draw(300, 50)
+    def draw_buttons(self, screen):
+        self.moveBackwardButton.draw(screen, 100, 50)
+        self.moveForwardButton.draw(screen, 300, 50)
 
 
-    def draw(self):
-        self.screen.fill(color_palette[1])
-        self.draw_move()
-        self.draw_board()
-        self.draw_buttons()
+    def draw(self, screen):
+        screen.fill(color_palette[1])
+        self.draw_move(screen)
+        self.draw_board(screen)
+        self.draw_buttons(screen)
         mark = None
         if len(self.moveLog) % 2 == 0:
             mark = 'o'
         else:
             mark = 'x'
         if winning_board_points := self.find_consecutive_marks(mark):
-            self.draw_winning_line(winning_board_points)
+            self.draw_winning_line(screen, winning_board_points)
         pygame.display.flip()
 
 
-    def loop(self, fps_limit = 10):
+    def loop(self, screen, fps_limit = 10):
         clock = pygame.time.Clock()
         while True:
             clock.tick(fps_limit)
@@ -212,7 +209,7 @@ class Caro:
                         self.move_forward()
                     print(self.board, '\n')
 
-            self.draw()
+            self.draw(screen)
 
 
     def find_vertical_consecutive_marks(self, mark):
@@ -288,9 +285,9 @@ class Caro:
         return []
 
 
-    def draw_winning_line(self, winning_board_points):
+    def draw_winning_line(self, screen, winning_board_points):
         if len(winning_board_points) == self.consecutive_num:
-            pygame.draw.line(self.screen, color_palette[4],
+            pygame.draw.line(screen, color_palette[4],
                              (winning_board_points[0][1] * self.board.square_width + self.board.x_offset + self.board.square_width // 2,
                               winning_board_points[0][0] * self.board.square_width + self.board.y_offset + self.board.square_width // 2),
                              (winning_board_points[self.consecutive_num - 1][1] * self.board.square_width + self.board.x_offset + self.board.square_width // 2,
