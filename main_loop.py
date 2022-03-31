@@ -1,9 +1,9 @@
-import pygame, sys
+import pygame, sys, json
 import caro_board, menu
 import constants
 scene = constants.SCENE_MENU
 
-res = width, height = 720, 720
+res = width, height = constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT
 pygame.init()
 pygame.display.init()
 screen = pygame.display.set_mode(res, pygame.RESIZABLE)
@@ -11,10 +11,10 @@ fps_limit = 10
 clock = pygame.time.Clock()
 
 done = False
-caro = caro_board.Caro()
+caro = caro_board.Caro(constants.CARO_OBJECT)
 caro.draw_board(screen)
 
-menu_instance = menu.Menu()
+menu_instance = menu.Menu(constants.MENU_OBJECT)
 
 while not done:
     clock.tick(fps_limit)

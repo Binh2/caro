@@ -1,24 +1,22 @@
 import pygame
 import constants
-import colors
-import text
-
-color_palette = colors.color_palettes["mysterious"]
-for i in  range(len(color_palette)):
-    color_palette[i] = pygame.Color(color_palette[i])
+import button
 
 
 class Board:
     __instance = None
-    def __init__(self, row = 10, col = 10):
+    def __init__(self, object):
         if Board.__instance != None:
             raise Exception("Board is a singleton class")
         Board.__instance = self
-        self.square_width = 40
-        self.x_offset = 100
-        self.y_offset = 100
-        self.row = row
-        self.col = col
+        self.object = object
+        self.square_width = object["square_width"]
+        self.x_offset = object["x_offset"]
+        self.y_offset = object["y_offset"]
+        self.row = object["row"]
+        self.col = object["col"]
+        self.is_aspect_ratio_rescale = object["is_aspect_ratio_rescale"]
+        self.color = {"square_border": object["color"]["square_border"]}
         self.board = [['.' for j in range(self.col)] for i in range(self.row)]
 
 
@@ -46,71 +44,111 @@ class Board:
         return '\n'.join([' '.join([str(cell) for cell in row]) for row in self.board])
 
 
+    def rescale(self, scaleX, scaleY):
+        scale = min(scaleX, scaleY)
+        if self.is_aspect_ratio_rescale:
+            scaleX = scaleY = scale
+        self.square_width = int(self.object["square_width"] * scale)
+        self.x_offset = int(self.object["x_offset"] * scaleX)
+        self.y_offset = int(self.object["y_offset"] * scaleY)
+
+
     def draw(self, screen):
         for i in range(self.row):
             for j in range(self.col):
                 rect = pygame.Rect(i * self.square_width + self.x_offset, j * self.square_width + self.y_offset, self.square_width, self.square_width)
-                pygame.draw.rect(screen, color_palette[2], rect, 1, 2)
+                pygame.draw.rect(screen, self.color["square_border"], rect, 1, 2)
 
 
 class MoveLog():
     def __init__(self):
-        self.moveLog = []
-        self.moveLogTrash = []
+        self.move_log = []
+        self.move_log_trash = []
 
 
     def draw(self, screen):
-        for markObject in self.moveLog:
+        for markObject in self.move_log:
             markObject.draw(screen)
 
 
     def add(self, markObject):
-        if self.moveLogTrash != []:
-            self.moveLogTrash = []
-        self.moveLog.append(markObject)
+        if self.move_log_trash != []:
+            self.move_log_trash = []
+        self.move_log.append(markObject)
 
 
     def move_backward(self):
-        if self.moveLog == []:
+        if self.move_log == []:
             return
-        self.moveLogTrash.append(self.moveLog.pop())
+        self.move_log_trash.append(self.move_log.pop())
 
 
     def move_forward(self):
-        if self.moveLogTrash == []:
+        if self.move_log_trash == []:
             return
-        self.moveLog.append(self.moveLogTrash.pop())
+        self.move_log.append(self.move_log_trash.pop())
 
 
     def __getitem__(self, i):
-        return self.moveLog[i]
+        return self.move_log[i]
 
 
     def __len__(self):
-        return len(self.moveLog)
+        return len(self.move_log)
 
 
 class Mark():
-    def __init__(self, x, y, mark):
-        self.mark = mark
+    def __init__(self, object):
+        self.object = object
+        self.mark = object["mark"]
         if (self.mark == 'x'):
-            corner_offset = Board.get_inst().square_width // 7
-            self.color = color_palette[0]
-            self.image = pygame.Surface((Board.get_inst().square_width, Board.get_inst().square_width))
-            pygame.draw.line(self.image, self.color, (corner_offset, corner_offset),
-                             (Board.get_inst().square_width - corner_offset, Board.get_inst().square_width - corner_offset), 5)
-            pygame.draw.line(self.image, self.color, (Board.get_inst().square_width - corner_offset, corner_offset),
-                             (corner_offset, Board.get_inst().square_width - corner_offset), 5)
+            self.color = self.object["color"]["x"]
+            self.image = self.get_x_image()
         else:
-            self.image = pygame.Surface((Board.get_inst().square_width, Board.get_inst().square_width))
-            pygame.draw.circle(self.image, color_palette[2], (Board.get_inst().square_width // 2, Board.get_inst().square_width // 2), Board.get_inst().square_width // 2, 5)
-        self.image = pygame.transform.scale(self.image, (Board.get_inst().square_width, Board.get_inst().square_width))
-        self.image.set_colorkey((0,0,0))
+            self.color = self.object["color"]["y"]
+            self.image = self.get_o_image()
         self.rect = self.image.get_rect()
-        self.y = (x - Board.get_inst().x_offset) // Board.get_inst().square_width
-        self.x = (y - Board.get_inst().y_offset) // Board.get_inst().square_width
+        self.y = (object["x"] - Board.get_inst().x_offset) // Board.get_inst().square_width
+        self.x = (object["y"] - Board.get_inst().y_offset) // Board.get_inst().square_width
         self.rect.x = self.y * Board.get_inst().square_width + Board.get_inst().x_offset
         self.rect.y = self.x * Board.get_inst().square_width + Board.get_inst().y_offset
+        self.is_aspect_ratio_rescale = object["is_aspect_ratio_rescale"]
+        # self.object["image"] = self.image
+        screen_width, screen_height = pygame.display.get_surface().get_size()
+        rect_width, rect_height = self.rect.size
+        self.object["image"] = pygame.transform.scale(self.image, (rect_width * constants.SCREEN_WIDTH / screen_width, rect_height * constants.SCREEN_HEIGHT / screen_width))
+        self.object["rect"] = {"x": self.rect.x * constants.SCREEN_WIDTH / screen_width, "y": self.rect.y * constants.SCREEN_HEIGHT // screen_width}
+
+
+
+    def get_x_image(self):
+        # corner_offset = Board.get_inst().square_width // 7
+        corner_offset = 0
+        image = pygame.Surface((Board.get_inst().square_width, Board.get_inst().square_width))
+        pygame.draw.line(image, self.color, (corner_offset, corner_offset),
+                         (Board.get_inst().square_width - corner_offset, Board.get_inst().square_width - corner_offset), 5)
+        pygame.draw.line(image, self.color, (Board.get_inst().square_width - corner_offset, corner_offset),
+                         (corner_offset, Board.get_inst().square_width - corner_offset), 5)
+        image.set_colorkey((0,0,0))
+        return image
+
+
+    def get_o_image(self):
+        image = pygame.Surface((Board.get_inst().square_width, Board.get_inst().square_width))
+        pygame.draw.circle(image, self.color, (Board.get_inst().square_width // 2, Board.get_inst().square_width // 2), Board.get_inst().square_width // 2, 5)
+        image.set_colorkey((0,0,0))
+        return image
+
+
+    def rescale(self, scaleX, scaleY):
+        scale = min(scaleX, scaleY)
+        if self.is_aspect_ratio_rescale:
+            scaleX = scaleY = scale
+        self.rect.x = int(self.object["rect"]["x"] * scaleX)
+        self.rect.y = int(self.object["rect"]["y"] * scaleY)
+        width = self.object["image"].get_rect().width
+        height = self.object["image"].get_rect().height
+        self.image = pygame.transform.scale(self.object["image"], (scaleX * width, scaleY * height))
 
 
     def draw(self, screen):
@@ -118,47 +156,63 @@ class Mark():
 
 
 class Caro:
-    def __init__(self, board_row = 10, board_col = 10):
-        self.board = Board(board_row, board_col)
-        self.moveLog = MoveLog()
-        self.moveLogTrash = self.moveLog.moveLogTrash
+    def __init__(self, object):
+        self.board = Board(constants.BOARD_OBJECT)
+        self.move_log = MoveLog()
         self.consecutive_num = 5
-        self.moveBackwardButton = text.Text("Move back", 50)
-        self.moveForwardButton = text.Text("Move forward", 50)
+        self.color = {
+            "background": object["color"]["background"]
+        }
+        self.buttons = []
+        for buttonObject in object["buttons"]:
+            self.buttons.append(button.Button(buttonObject))
+
+
+    def rescale(self, scaleX, scaleY):
+        self.board.rescale(scaleX, scaleY)
+        for markObject in self.move_log:
+            markObject.rescale(scaleX, scaleY)
+        for button in self.buttons:
+            button.rescale(scaleX, scaleY)
 
 
     def add_move(self, x, y):
-        board_y = (x - self.board.x_offset) // self.board.square_width
+        board_y = int((x - self.board.x_offset) // self.board.square_width)
         if 0 <= board_y < self.board.row:
-            board_x = (y - self.board.y_offset) // self.board.square_width
+            board_x = int((y - self.board.y_offset) // self.board.square_width)
             if 0 <= board_x < self.board.col:
                 if self.board[board_x][board_y] == '.':
                     mark = None
-                    if len(self.moveLog) % 2 == 0:
+                    if len(self.move_log) % 2 == 0:
                         mark = 'x'
                     else:
                         mark = 'o'
                     self.board[board_x][board_y] = mark
-                    markObject = Mark(x, y, mark)
-                    self.moveLog.add(markObject)
+                    markObject = Mark({"x": x, "y": y, "mark": mark, **constants.MARK_OBJECT})
+                    self.move_log.add(markObject)
+
+
+    def event_handler(self, event):
+        if event.type == pygame.VIDEORESIZE:
+            self.rescale(event.w / constants. SCREEN_WIDTH, event.h / constants.SCREEN_HEIGHT)
 
 
     def move_backward(self):
-        if len(self.moveLog) == 0:
+        if len(self.move_log) == 0:
             return
-        self.board.remove(self.moveLog[-1].x, self.moveLog[-1].y)
-        self.moveLog.move_backward()
+        self.board.remove(self.move_log[-1].x, self.move_log[-1].y)
+        self.move_log.move_backward()
 
 
     def move_forward(self):
-        if self.moveLogTrash == []:
+        if self.move_log.move_log_trash == []:
             return
-        self.board.add(self.moveLogTrash[-1].x, self.moveLogTrash[-1].y, self.moveLogTrash[-1].mark)
-        self.moveLog.move_forward()
+        self.board.add(self.move_log.move_log_trash[-1].x, self.move_log.move_log_trash[-1].y, self.move_log.move_log_trash[-1].mark)
+        self.move_log.move_forward()
 
 
     def draw_move(self, screen):
-        self.moveLog.draw(screen)
+        self.move_log.draw(screen)
 
 
     def draw_board(self, screen):
@@ -166,17 +220,17 @@ class Caro:
 
 
     def draw_buttons(self, screen):
-        self.moveBackwardButton.draw(screen, 100, 50)
-        self.moveForwardButton.draw(screen, 300, 50)
+        for button in self.buttons:
+            button.draw(screen)
 
 
     def draw(self, screen):
-        screen.fill(color_palette[1])
+        screen.fill(self.color["background"])
         self.draw_move(screen)
         self.draw_board(screen)
         self.draw_buttons(screen)
         mark = None
-        if len(self.moveLog) % 2 == 0:
+        if len(self.move_log) % 2 == 0:
             mark = 'o'
         else:
             mark = 'x'
@@ -203,11 +257,14 @@ class Caro:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     pos = list(event.pos)
                     self.add_move(pos[0], pos[1])
-                    if self.moveBackwardButton.is_clicked(event.pos):
-                        self.move_backward()
-                    if self.moveForwardButton.is_clicked(event.pos):
-                        self.move_forward()
+                    for button in self.buttons:
+                        print(button.is_clicked())
+                        if button.is_clicked() and button.name == "move_backward":
+                            self.move_backward()
+                        if button.is_clicked() and button.name == "move_forward":
+                            self.move_forward()
                     print(self.board, '\n')
+                self.event_handler(event)
 
             self.draw(screen)
 
