@@ -24,7 +24,10 @@ MENU_OBJECT = {
             },
             "is_center": True
         }
-    ]
+    ],
+    "color": {
+        "background": (255,255,255)
+    }
 }
 
 BOARD_OBJECT = {
@@ -49,15 +52,16 @@ MARK_OBJECT = {
 
 CARO_OBJECT = {
     "color": {
-        "background": (0,0,100)
+        "background": (0,0,100),
+        "winning_line": (0,100,0)
     },
     "buttons": [
         {
             "name": "move_backward",
             "x": 100,
-            "y": 80,
-            "width": 50,
-            "height": 50,
+            "y": 50,
+            "width": 40,
+            "height": 40,
             "border_radius": 5,
             "text": "<",
             "text_size": 50,
@@ -70,9 +74,9 @@ CARO_OBJECT = {
         {
             "name": "move_forward",
             "x": 150,
-            "y": 80,
-            "width": 50,
-            "height": 50,
+            "y": 50,
+            "width": 40,
+            "height": 40,
             "border_radius": 5,
             "text": ">",
             "text_size": 50,

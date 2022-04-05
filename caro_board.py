@@ -101,24 +101,28 @@ class Mark():
     def __init__(self, object):
         self.object = object
         self.mark = object["mark"]
-        if (self.mark == 'x'):
-            self.color = self.object["color"]["x"]
-            self.image = self.get_x_image()
-        else:
-            self.color = self.object["color"]["y"]
-            self.image = self.get_o_image()
-        self.rect = self.image.get_rect()
-        self.y = (object["x"] - Board.get_inst().x_offset) // Board.get_inst().square_width
-        self.x = (object["y"] - Board.get_inst().y_offset) // Board.get_inst().square_width
-        self.rect.x = self.y * Board.get_inst().square_width + Board.get_inst().x_offset
-        self.rect.y = self.x * Board.get_inst().square_width + Board.get_inst().y_offset
+        self.color = self.object["color"]["x"] if self.mark == 'x' else self.object["color"]["y"]
+        self.image = self.get_image()
+        self.rect = self.get_image_rect()
         self.is_aspect_ratio_rescale = object["is_aspect_ratio_rescale"]
         # self.object["image"] = self.image
         screen_width, screen_height = pygame.display.get_surface().get_size()
         rect_width, rect_height = self.rect.size
-        self.object["image"] = pygame.transform.scale(self.image, (rect_width * constants.SCREEN_WIDTH / screen_width, rect_height * constants.SCREEN_HEIGHT / screen_width))
-        self.object["rect"] = {"x": self.rect.x * constants.SCREEN_WIDTH / screen_width, "y": self.rect.y * constants.SCREEN_HEIGHT // screen_width}
+        # self.object["image"] = pygame.transform.scale(self.image, (rect_width * constants.SCREEN_WIDTH / screen_width, rect_height * constants.SCREEN_HEIGHT / screen_width))
+        # self.object["rect"] = {"x": self.rect.x * constants.SCREEN_WIDTH / screen_width, "y": self.rect.y * constants.SCREEN_HEIGHT // screen_width}
 
+
+    def get_image_rect(self):
+        rect = self.image.get_rect()
+        # y = (self.object["x"] - Board.get_inst().x_offset) // Board.get_inst().square_width
+        # x = (self.object["y"] - Board.get_inst().y_offset) // Board.get_inst().square_width
+        rect.x = self.object["board_y"] * Board.get_inst().square_width + Board.get_inst().x_offset
+        rect.y = self.object["board_x"] * Board.get_inst().square_width + Board.get_inst().y_offset
+        return rect
+
+
+    def get_image(self):
+        return self.get_x_image() if self.mark == 'x' else self.get_o_image()
 
 
     def get_x_image(self):
@@ -144,11 +148,13 @@ class Mark():
         scale = min(scaleX, scaleY)
         if self.is_aspect_ratio_rescale:
             scaleX = scaleY = scale
-        self.rect.x = int(self.object["rect"]["x"] * scaleX)
-        self.rect.y = int(self.object["rect"]["y"] * scaleY)
-        width = self.object["image"].get_rect().width
-        height = self.object["image"].get_rect().height
-        self.image = pygame.transform.scale(self.object["image"], (scaleX * width, scaleY * height))
+        # self.rect.x = int(self.object["rect"]["x"] * scaleX)
+        # self.rect.y = int(self.object["rect"]["y"] * scaleY)
+        # width = self.object["image"].get_image_rect().width
+        # height = self.object["image"].get_image_rect().height
+        # self.image = pygame.transform.scale(self.object["image"], (scaleX * width, scaleY * height))
+        self.image = self.get_image()
+        self.rect = self.get_image_rect()
 
 
     def draw(self, screen):
@@ -161,7 +167,8 @@ class Caro:
         self.move_log = MoveLog()
         self.consecutive_num = 5
         self.color = {
-            "background": object["color"]["background"]
+            "background": object["color"]["background"],
+            "winning_line": object["color"]["winning_line"]
         }
         self.buttons = []
         for buttonObject in object["buttons"]:
@@ -188,7 +195,7 @@ class Caro:
                     else:
                         mark = 'o'
                     self.board[board_x][board_y] = mark
-                    markObject = Mark({"x": x, "y": y, "mark": mark, **constants.MARK_OBJECT})
+                    markObject = Mark({"board_x": board_x, "board_y": board_y, "mark": mark, **constants.MARK_OBJECT})
                     self.move_log.add(markObject)
 
 
@@ -258,7 +265,6 @@ class Caro:
                     pos = list(event.pos)
                     self.add_move(pos[0], pos[1])
                     for button in self.buttons:
-                        print(button.is_clicked())
                         if button.is_clicked() and button.name == "move_backward":
                             self.move_backward()
                         if button.is_clicked() and button.name == "move_forward":
@@ -344,7 +350,7 @@ class Caro:
 
     def draw_winning_line(self, screen, winning_board_points):
         if len(winning_board_points) == self.consecutive_num:
-            pygame.draw.line(screen, color_palette[4],
+            pygame.draw.line(screen, self.color["winning_line"],
                              (winning_board_points[0][1] * self.board.square_width + self.board.x_offset + self.board.square_width // 2,
                               winning_board_points[0][0] * self.board.square_width + self.board.y_offset + self.board.square_width // 2),
                              (winning_board_points[self.consecutive_num - 1][1] * self.board.square_width + self.board.x_offset + self.board.square_width // 2,

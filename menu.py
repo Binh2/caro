@@ -1,26 +1,21 @@
 import pygame
-import text
 import constants
-import colors
 import button
 
-color_palette = colors.color_palettes["freezing"]
 
 class Menu:
     def __init__(self, object):
-        # self.windows = []
-        # self.windows.append(text.Text("Play", 50))
-
+        self.object = object
+        self.color = {
+            "background": self.object["color"]["background"]
+        }
         self.buttons = []
         for buttonObject in object["buttons"]:
             self.buttons.append(button.Button(buttonObject))
 
 
     def draw(self, screen):
-        screen.fill((255,255,255))
-        # for window in self.windows:
-        #     window.draw(screen, (screen.get_width()) // 2 - window.image.get_width() // 2, screen.get_height() // 2 - window.image.get_height() // 2)
-
+        screen.fill(self.color["background"])
         for button in self.buttons:
             button.draw(screen)
 
