@@ -101,13 +101,15 @@ class Mark():
     def __init__(self, object):
         self.object = object
         self.mark = object["mark"]
+        self.board_x = object["board_x"]
+        self.board_y = object["board_y"]
         self.color = self.object["color"]["x"] if self.mark == 'x' else self.object["color"]["y"]
         self.image = self.get_image()
         self.rect = self.get_image_rect()
         self.is_aspect_ratio_rescale = object["is_aspect_ratio_rescale"]
         # self.object["image"] = self.image
-        screen_width, screen_height = pygame.display.get_surface().get_size()
-        rect_width, rect_height = self.rect.size
+        # screen_width, screen_height = pygame.display.get_surface().get_size()
+        # rect_width, rect_height = self.rect.size
         # self.object["image"] = pygame.transform.scale(self.image, (rect_width * constants.SCREEN_WIDTH / screen_width, rect_height * constants.SCREEN_HEIGHT / screen_width))
         # self.object["rect"] = {"x": self.rect.x * constants.SCREEN_WIDTH / screen_width, "y": self.rect.y * constants.SCREEN_HEIGHT // screen_width}
 
@@ -116,8 +118,8 @@ class Mark():
         rect = self.image.get_rect()
         # y = (self.object["x"] - Board.get_inst().x_offset) // Board.get_inst().square_width
         # x = (self.object["y"] - Board.get_inst().y_offset) // Board.get_inst().square_width
-        rect.x = self.object["board_y"] * Board.get_inst().square_width + Board.get_inst().x_offset
-        rect.y = self.object["board_x"] * Board.get_inst().square_width + Board.get_inst().y_offset
+        rect.x = self.board_y * Board.get_inst().square_width + Board.get_inst().x_offset
+        rect.y = self.board_x * Board.get_inst().square_width + Board.get_inst().y_offset
         return rect
 
 
@@ -207,14 +209,14 @@ class Caro:
     def move_backward(self):
         if len(self.move_log) == 0:
             return
-        self.board.remove(self.move_log[-1].x, self.move_log[-1].y)
+        self.board.remove(self.move_log[-1].board_x, self.move_log[-1].board_y)
         self.move_log.move_backward()
 
 
     def move_forward(self):
         if self.move_log.move_log_trash == []:
             return
-        self.board.add(self.move_log.move_log_trash[-1].x, self.move_log.move_log_trash[-1].y, self.move_log.move_log_trash[-1].mark)
+        self.board.add(self.move_log.move_log_trash[-1].board_x, self.move_log.move_log_trash[-1].board_y, self.move_log.move_log_trash[-1].mark)
         self.move_log.move_forward()
 
 
