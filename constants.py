@@ -2,10 +2,29 @@ QUIT = -1
 SCENE_GAME = 0
 SCENE_MENU = 1
 
-SCREEN_WIDTH = 560
-SCREEN_HEIGHT = 560
+SCREEN_SIZE = (560, 560)
+SCREEN_WIDTH, SCREEN_HEIGHT= SCREEN_SIZE
 
 FPS_LIMIT = 10
+
+TEXT_BOX_OBJECT = {
+    "name": "play",
+    "x": SCREEN_WIDTH / 2,
+    "y": SCREEN_HEIGHT / 2,
+    "width": 100,
+    "height": 50,
+    "border_radius": 5,
+    "text": "Play",
+    "text_size": 50,
+    "color": {
+        "background": [255,0,0],
+        "text": [0,255,0],
+        "cursor": [0,100,0]
+    },
+    "is_center": True,
+    "padding_left": 60,
+    "padding_right": 20
+}
 
 MENU_OBJECT = {
     "buttons": [
@@ -69,7 +88,8 @@ CARO_OBJECT = {
                 "background": [255,0,0],
                 "text": [0,255,0]
             },
-            "is_center": True
+            "is_center": True,
+            "is_visible": True
         },
         {
             "name": "move_forward",
@@ -84,7 +104,24 @@ CARO_OBJECT = {
                 "background": [255,0,0],
                 "text": [0,255,0]
             },
-            "is_center": True
+            "is_center": True,
+            "is_visible": True
+        },
+        {
+            "name": "restart",
+            "x": SCREEN_WIDTH // 2,
+            "y": SCREEN_HEIGHT // 2,
+            "width": 100,
+            "height": 40,
+            "border_radius": 5,
+            "text": "Restart",
+            "text_size": 50,
+            "color": {
+                "background": [255,0,0],
+                "text": [0,255,0]
+            },
+            "is_center": True,
+            "is_visible": False
         }
     ]
 }

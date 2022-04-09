@@ -15,21 +15,21 @@ class Button:
         self.color_palette = self.object['color'] # color_palette had to have background and text key
         self.name = self.object['name']
         self.is_center = self.object['is_center']
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
 
     def draw(self, screen):
         font = pygame.font.SysFont(None, int(self.text_size))
-        text = font.render(self.text, True, self.color_palette["text"])
+        text_surface = font.render(self.text, True, self.color_palette["text"])
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        if not self.is_center:
-            text_rect = text.get_rect(center = (self.x + self.width / 2, self.y + self.height / 2))
-
-        else:
-            text_rect = text.get_rect(center = (self.x, self.y))
+        if self.is_center:
+            text_rect = text_surface.get_rect(center = (self.x, self.y))
             self.rect.center = (self.x, self.y);
+        else:
+            text_rect = text.get_rect(topleft = (self.x, self.y + (self.height - text_surface.get_height())/2))
 
         pygame.draw.rect(screen, self.color_palette["background"], self.rect, 0, self.border_radius)
-        screen.blit(text, text_rect)
+        screen.blit(text_surface, text_rect)
 
 
     def rescale(self, xScalar, yScalar):
