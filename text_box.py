@@ -101,9 +101,9 @@ class TextBox:
                     self.is_focus = False
                 elif event.key == pygame.K_DELETE:
                     self.text = self.delete_string_at(self.text, self.cursor_pos + 1, 1)
-                elif event.key == pygame.K_a:
+                elif event.key == pygame.K_LEFT:
                     self.cursor_pos -= 1
-                elif event.key == pygame.K_d:
+                elif event.key == pygame.K_RIGHT:
                     self.cursor_pos += 1
                 elif event.key == pygame.K_HOME:
                     self.cursor_pos = 0
