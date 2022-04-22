@@ -7,24 +7,48 @@ SCREEN_WIDTH, SCREEN_HEIGHT= SCREEN_SIZE
 
 FPS_LIMIT = 10
 
-TEXT_BOX_OBJECT = {
-    "name": "play",
-    "x": SCREEN_WIDTH / 2,
-    "y": SCREEN_HEIGHT / 2,
-    "width": 100,
-    "height": 50,
-    "border_radius": 5,
-    "text": "Play",
-    "text_size": 50,
-    "color": {
-        "background": [255,0,0],
-        "text": [0,255,0],
-        "cursor": [0,100,0]
+TEXT_BOX_OBJECT = [
+    {
+        "name": "play",
+        "center_x": SCREEN_WIDTH / 2,
+        "center_y": SCREEN_HEIGHT / 2,
+        "width": 100,
+        "height": 50,
+        "border_radius": 5,
+        "text": "Play",
+        "text_font": None,
+        "text_size": 50,
+        "text_limit": 100,
+        "color": {
+            "background": [255,0,0],
+            "text": [0,255,0],
+            "cursor": [0,100,0]
+        },
+        "is_center": True,
+        "padding_left": 60,
+        "padding_right": 20
     },
-    "is_center": True,
-    "padding_left": 60,
-    "padding_right": 20
-}
+    {
+        "name": "play",
+        "x": SCREEN_WIDTH / 2,
+        "y": SCREEN_HEIGHT / 2,
+        "width": 100,
+        "height": 50,
+        "border_radius": 5,
+        "text": "Play",
+        "text_font": None,
+        "text_size": 50,
+        "text_limit": 6,
+        "color": {
+            "background": [255,0,0],
+            "text": [0,255,0],
+            "cursor": [0,100,0]
+        },
+        "is_center": False,
+        "padding_left": 60,
+        "padding_right": 20
+    }
+]
 
 MENU_OBJECT = {
     "buttons": [
